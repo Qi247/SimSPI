@@ -1,4 +1,28 @@
+The main files and their functions are as follows (listed in order):
 
+joern: Software used for generating code property graphs, primarily using the bin/joern-parse and bin/joern commands.
+
+get_rawpatch.py: Script for retrieving patch files.
+
+get_ab_file.py: Script for obtaining pre- and post-patch versions of files.
+
+gen_cpg.py + locate_align.py: Scripts for removing unrelated function modifications between pre- and post-patch versions.
+
+my_gen_cpg.py: Script for generating code property graphs and processing node and edge relationships (complex, no need to fully understand, inspired by other research papers).
+
+test.py: Calls two scripts in the preproc directory to parse node and edge information from CPG files:
+
+preproc/extract_graph.py: Reads files, extracts properties, and converts code into token sequences.
+
+preproc/construct_graph.py: Handles node and edge embeddings, generating vectors.
+
+testdata2-5: Processed data used as input for the model (corresponding to FFmpeg, Linux, QEMU, Wireshark).
+
+dataloader.py: Works with model.py to load data.
+
+model.py: The main model file.
+
+output-4edges: Directory for saving model outputs.
 ## Installation
 
 ### 1. Install OS
@@ -25,7 +49,7 @@ Download the project folder into the user's `HOME` directory.
 
 ```shell
 cd ~
-git clone 
+git clone https://github.com/Qi247/SimSPI.git
 ```
 
 
