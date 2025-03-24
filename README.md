@@ -110,7 +110,7 @@ python3 merge_cpg.py
 
 Here, `gen_cpg.py` will generate two CPGs for pre- and post-patch files, respectively.\
 `merge_cpg.py` will generate a merged PatchCPG from the two CPGs.\
-The output PatchCPGs will be saved in `~/GraphSPD/testdata/`.
+The output PatchCPGs will be saved in `~/SimSPI/testdata/`.
 
 ### 3. Run PatchGNN
 
