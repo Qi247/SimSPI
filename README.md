@@ -25,29 +25,29 @@ Download the project folder into the user's `HOME` directory.
 
 ```shell
 cd ~
-git clone https://github.com/SunLab-GMU/GraphSPD.git
+git clone 
 ```
 
 
 ### 3. Install Dependencies
 
 ```shell 
-cd ~/GraphSPD/
+cd ~/SimSPI/
 chmod +x install_dep.sh
 ./install_dep.sh
 ```
 
 ## How-to-Run
 
->Note: All commands are executed under the main project folder: `~/GraphSPD/`.
+>Note: All commands are executed under the main project folder: `~/SimSPI/`.
 
 ### 1. Pre-processing
 
 #### 1.1 Use Test Patch Samples
 
-We provide 10 patch as test examples in `~/GraphSPD/raw_patch/`.
+We provide 10 patch as test examples in `~/SimSPI/raw_patch/`.
 
-To retrive their pre- and post-patch files, run the following commands under `~/GraphSPD/`:
+To retrive their pre- and post-patch files, run the following commands under `~/SimSPI/`:
 
 ```shell
 python3 get_ab_file.py nginx nginx 02cca547
@@ -64,7 +64,7 @@ python3 get_ab_file.py nginx nginx 56f53316
 
 In the above, the third column refers to the owner (i.e., `nginx`), the fourth column refers to the repository (i.e., `nginx`), and the last column refers to the commit ID (e.g., `02cca547`).
 
-As the result, the pre-patch and post-patch files will be stored in `~/GraphSPD/ab_file/`.
+As the result, the pre-patch and post-patch files will be stored in `~/SimSPI/ab_file/`.
 
 #### 1.2 Use Your Own Patches
 
@@ -90,13 +90,13 @@ The output PatchCPGs will be saved in `~/GraphSPD/testdata/`.
 
 ### 3. Run PatchGNN
 
-In `~/GraphSPD/`, run the command:
+In `~/SimSPI/`, run the command:
 
 ```shell 
 python3 test.py
 ```
 
-The prediction results are saved in file `~/GraphSPD/logs/test_results.txt`. 
+The prediction results are saved in file `~/SimSPI/logs/test_results.txt`. 
 
 See the results by running:
 
@@ -120,24 +120,5 @@ filename,prediction
 ./testdata/56f53316/out_slim_ninf_noast_n1_w.log,0
 ```
 
-## Other Resources
 
-[1] [PatchDB: A Large-Scale Security Patch Dataset](https://sunlab-gmu.github.io/PatchDB/)\
-[2] [PatchRNN: A Deep Learning-Based System for Security Patch Identification](https://shuwang127.github.io/PatchRNN-demo/)\
-[3] [Detecting "0-Day" Vulnerability: An Empirical Study of Secret Security Patch in OSS](https://par.nsf.gov/servlets/purl/10109780)
-
-## Team
-
-The GraphSPD package is built by [Sun Security Laboratory](https://sunlab-gmu.github.io/) (SunLab) at [George Mason University](https://www2.gmu.edu/), Fairfax, VA. 
-
-<div align="left" display="flex">    
-    <img src="./docs/imgs/sunlab_logo_full.png" height = "125" alt="sunlab" align="center" />
-    &emsp;&emsp;&emsp;&emsp;
-    <img src="./docs/imgs/csis_logo.png" height = "135" alt="csis" align="center" />
-</div>
-
----
-Last Updated Date: Aug, 2022
-
-Patch Detection
 
