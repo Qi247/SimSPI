@@ -100,7 +100,7 @@ where `[owner]`, `[repository]`, and `[commitID]` are the owner name, repository
 
 ### 2. Generate PatchCPGs
 
-To generate PatchCPGs for all the patches processed by the last step, please run the following commands under `~/GraphSPD/`:
+To generate PatchCPGs for all the patches processed by the last step, please run the following commands under `~/SimSPI/`:
 
 ```shell 
 chmod -R +x ./joern
