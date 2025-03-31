@@ -262,7 +262,7 @@ def cal_matrix(matrix_args):
 # main
 def main():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = PGCN(num_node_features=dim_features)
+    model = PGCN(num_node_features=dim_features).to(device)
     # model.load_state_dict(
     # torch.load(mdlsPath + f'/model_{_NETXARCHT_}_{dim_features}_10.pth'))
     # model.load_state_dict(torch.load("2024-01-16-15.pth"))
