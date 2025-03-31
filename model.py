@@ -347,6 +347,121 @@ class GNNNet(nn.Module):
         sim_matrix = torch.unsqueeze(sim_matrix, dim=0)  # 1 x K*2 x K*2
         return g_matrix, sim_matrix
 
+class HybridGNNNet(nn.Module):
+    class DualGNNLayer(nn.Module):
+        """集成GCN和GraphSAGE的双通道GNN层"""
+        def __init__(self, gnn_args: Dict[str, int]):
+            super(HybridGNNNet.DualGNNLayer, self).__init__()
+            
+            # 原始组件（保留）
+            self.gats = [
+                GATConv(-1, gnn_args['out_channels'], 
+                       dropout=0.2).to(device) 
+                for _ in range(4)
+            ]
+            
+            # 新增双通道组件
+            self.gcn_layers = nn.ModuleList([
+                GCNConv(-1, gnn_args['out_channels']).to(device)
+                for _ in range(4)
+            ])
+            
+            self.sage_layers = nn.ModuleList([
+                SAGEConv(-1, gnn_args['out_channels']).to(device)
+                for _ in range(4)
+            ])
+            
+            # 融合层
+            self.fusion_proj = nn.Linear(
+                gnn_args['out_channels'] * 2,  # GCN + GraphSAGE
+                gnn_args['out_channels']
+            )
+            
+            # 参数初始化
+            self.Ws = nn.ParameterList([
+                nn.Parameter(torch.Tensor(gnn_args["out_channels"], 
+                            gnn_args["out_channels"]))
+                for _ in range(4)
+            ])
+            for W in self.Ws:
+                nn.init.xavier_uniform_(W, gain=nn.init.calculate_gain("relu"))
+                
+            self.alpha = nn.Parameter(torch.tensor(0.5))  # 自适应权重系数
+
+        def forward(self, x, edge_index, edge_attr):
+            x = x.float().to(device)
+            edge_index = edge_index.long().to(device)
+            edge_attr = edge_attr.float().to(device)
+            
+            x_combined = torch.zeros_like(x)
+            
+            for i in range(4):
+                # GCN分支
+                x_gcn = self.gcn_layers[i](x, edge_index, edge_attr[:, i+2])
+                x_gcn = F.relu(x_gcn)
+                
+                # GraphSAGE分支
+                x_sage = self.sage_layers[i](x, edge_index)
+                x_sage = F.relu(x_sage)
+                
+                # 自适应加权融合
+                fused = self.alpha * x_gcn + (1 - self.alpha) * x_sage
+                x_combined += torch.mm(fused, self.Ws[i])
+                
+            return x_combined
+
+    def __init__(self, gnn_args: Dict[str, int]):
+        super(HybridGNNNet, self).__init__()
+        self.gnn_layer = self.DualGNNLayer(gnn_args)
+        
+        # 下游任务层（保持原始结构）
+        self.g_feature_proj = nn.Linear(gnn_args["out_channels"], 
+                                       ggnn_args["out_channels"])
+        self.sim_matrix_layer = nn.Linear(gnn_args["out_channels"], K * 2)
+        self.sim_matrix_weight = nn.Linear(gnn_args["out_channels"], 
+                                          ggnn_args["out_channels"],
+                                          bias=False)
+        self.lstm = nn.LSTM(gnn_args['out_channels'],
+                           ggnn_args['out_channels'],
+                           2,
+                           batch_first=True)
+
+    def forward(self, X):
+        x_matrix_list = []
+        g_r_list = []
+        
+        for data in X["graph"][:K*2]:
+            # 双通道GNN处理
+            x_tmp = self.gnn_layer(data.x, data.edge_index, data.edge_attr)
+            
+            # 特征聚合（保留原始逻辑）
+            x_matrix_list.append(x_tmp)
+            g_r = x_tmp.mean(dim=0)  # 可替换为其他聚合方式
+            g_r_list.append(g_r)
+        
+        # 构建图级表示
+        g_matrix = torch.stack(g_r_list, dim=0).unsqueeze(0)
+        
+        # 相似度矩阵计算（优化版）
+        sim_matrix = self._calculate_sim_matrix(x_matrix_list)
+        
+        return g_matrix, sim_matrix
+
+    def _calculate_sim_matrix(self, x_list):
+        """优化的相似度矩阵计算"""
+        sim_matrix = torch.zeros(len(x_list), len(x_list)).to(device)
+        
+        # 归一化处理
+        x_normed = [F.normalize(x, p=2, dim=1) for x in x_list]
+        
+        for i, j in torch.combinations(torch.arange(len(x_normed)), 2):
+            # 矩阵级相似度计算
+            cos_sim = torch.mm(x_normed[i], x_normed[j].t())
+            hist = torch.histc(cos_sim, bins=21, min=-1, max=1)
+            hist_weight = torch.linspace(-1, 1, 21).to(device)
+            sim_matrix[i,j] = sim_matrix[j,i] = torch.sum(hist * hist_weight)
+            
+        return sim_matrix.unsqueeze(0)
 
 # 最外层的调用类
 class Net(nn.Module):
